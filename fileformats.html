@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title></title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <style type='text/css'>
+    body {
+        font-family: 'Seravek', 'Source Code Pro';
+        letter-spacing: -2px;
+        background: #002149;
+        background-size: 100%;
+        color: #fff;
+        margin: 0;
+        padding: 0;
+        font-weight: normal;
+    }
+    
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p {
+        margin: 0;
+    }
+    
+    em,
+    a {
+        font-style: normal;
+        color: #78BB32;
+    }
+    
+    ul {
+        line-height: 1.2em;
+    }
+    
+    a {
+        background: #34d0e7;
+        color: #000;
+        text-decoration: none;
+    }
+    
+    img {
+        width: 100%;
+    }
+    
+    div {
+        cursor: pointer;
+        cursor: hand;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        padding: 75px;
+        line-height: 97%;
+    }
+    
+    div.center {
+        text-align: center;
+    }
+    
+    div.imageText {
+        text-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+    }
+    
+    .bold {
+        font-weight: 900;
+        letter-spacing: .01em;
+    }
+    
+    .picture img {
+        height: 75%;
+    }
+    
+    .small {
+        font-size: .65em;
+    }
+    </style>
+    <script type='text/javascript'>
+    window.onload = function() {
+        var s = document.getElementsByTagName('div'),
+            ti;
+        if (!s) return;
+        big = {
+            current: 0,
+            forward: fwd,
+            reverse: rev,
+            go: go,
+            length: s.length
+        };
+
+        function go(n) {
+            big.current = n;
+            var i = 1e3,
+                e = s[n],
+                t = parseInt(e.dataset.timeToNext || 0, 10);
+            document.body.className = e.dataset.bodyclass || '';
+            for (var k = 0; k < s.length; k++) s[k].style.display = 'none';
+            e.style.display = 'inline';
+            e.style.fontSize = i + 'px';
+            if (e.firstChild && e.firstChild.nodeName === 'IMG') {
+                document.body.style.backgroundImage = 'url("' + e.firstChild.src + '")';
+                e.firstChild.style.display = 'none';
+                if ('classList' in e) e.classList.add('imageText');
+            } else {
+                document.body.style.backgroundImage = '';
+                document.body.style.backgroundColor = e.style.backgroundColor;
+            }
+            if (ti !== undefined) window.clearInterval(ti);
+            if (t > 0) ti = window.setTimeout(fwd, (t * 1000));
+            while ((e.offsetWidth > window.innerWidth ||
+                    e.offsetHeight > window.innerHeight) && i >= 0) {
+                e.style.fontSize = (i -= 2) + 'px';
+            }
+            e.style.marginTop = ((window.innerHeight - e.offsetHeight) / 2) + 'px';
+            if (window.location.hash !== n) window.location.hash = n;
+            document.title = e.textContent || e.innerText;
+        }
+        document.onclick = function() {
+            go(++big.current % (s.length));
+        };
+
+        function fwd() {
+            go(Math.min(s.length - 1, ++big.current));
+        }
+
+        function rev() {
+            go(Math.max(0, --big.current));
+        }
+        document.onkeydown = function(e) {
+            if (e.which === 39 || e.which === 34 || e.which === 40) fwd();
+            if (e.which === 37 || e.which === 33 || e.which === 38) rev();
+        };
+        document.ontouchstart = function(e) {
+            var x0 = e.changedTouches[0].pageX;
+            document.ontouchend = function(e) {
+                var x1 = e.changedTouches[0].pageX;
+                if (x1 - x0 < 0) fwd();
+                if (x1 - x0 > 0) rev();
+            };
+        };
+
+        function parse_hash() {
+            return Math.max(Math.min(s.length - 1,
+                parseInt(window.location.hash.substring(1), 10)), 0);
+        }
+        if (window.location.hash) big.current = parse_hash() || big.current;
+        window.onhashchange = function() {
+            var c = parse_hash();
+            if (c !== big.current) go(c);
+        };
+        go(big.current);
+    };
+    </script>
+</head>
+
+<body>
+    <div>
+        <span class="bold">data file formats</span>
+        <br/>@
+        <br/><em>maptime detroit</em>
+        <br/><span class="small">by Jimmy McBroom -- March 31, 2015</span>
+    </div>
+    <div>
+        <p class="bold">Esri shapefiles are <em>super common</em>
+            <ul>
+                <li>only one type of shape</li>
+                <li>read them with ArcMap, QGIS</li>
+                <li>online tools: CartoDB, ogr2ogr web client</li>
+                <li>size limit: 2 GB</li>
+                <li><em>not</em> human-readable</li>
+            </ul>
+    </div>
+    <div>
+        <p class="bold">Your "shapefile" needs <em>four files:</em>
+            <ul>
+                <li><em>.shp</em> contains<em> shapes</em></li>
+                <li><em>.shx</em> contains<em> index for shapes</em></li>
+                <li><em>.dbf</em> contains<em> data for shapes</em></li>
+                <li><em>.prj</em> contains<em> projection data</em></li>
+                <li>if there are other files: keep them</li>
+                <li>want to share? <em>.zip it up!!</em></li>
+            </ul>
+    </div>
+    <div>
+        <p class="bold">Esri geodatabases (.gdb)</p> are <em>not so common</em>
+        <ul>
+            <li>it's actually a container for shapefiles</li>
+            <li>multiple layers (points, lines, polygons)</li>
+            <li>read them with QGIS or ArcMap</li>
+        </ul>
+    </div>
+    <div>
+        <p class="bold">GeoJSON</p> is <em>more and more popular</em>
+        <ul>
+            <li><em>J</em>ava<em>S</em>cript <em>O</em>bject <em>N</em>otation for spatial</li>
+            <li>can represent points, lines, polygons in one file</li>
+            <li>human readable</li>
+            <li>coordinates <em> usually</em> in [-83.213, 42.324] format</li>
+            <li>but sometimes in a custom projection</li>
+        </ul>
+    </div>
+    <div>
+        <p class="bold">sample GeoJSON file w/ one feature</p>
+        <pre>
+        {
+          "type": "Feature",
+          "geometry": {
+            "type": "Point",
+            "coordinates": [125.6, 10.1]
+          },
+          "properties": {
+            "name": "Dinagat Islands"
+          }
+        }
+      </pre>
+    </div>
+    <div>
+      <p class="bold">GeoJSON is good for:</p>
+      <ul>
+        <li>sharing data with people</li>
+        <li>web mapping</li>
+        <li>editing and collaboration</li>
+        <li>being an <em> open standard</em></li>
+      </ul>
+    </div>    
+    <div>
+      <p class="bold">TopoJSON</p>
+      <ul>
+        <li>cousin to GeoJSON</li>
+        <li>encodes features with <em>topology</em></li>
+        <li>splits borders into <em>arcs</em> and specifies which arcs describe a feature</li>
+        <li>reduces file size via <em>simplification</em></li>
+      </ul>
+    </div>
+    <div>
+      <p class="bold">KML & KMZ<br/>(Keyhole Markup Language)</p>
+      <ul>
+        <li>XML-based</li>
+        <li>associated with Google Earth</li>
+        <li>human-readable</li>
+        <li>still exists, but I'd convert to GeoJSON</li>
+      </ul>
+    </div>
+    <div>
+      <p class="bold">GPX<br/>(GPS Exchange Format)</p>
+      <ul>
+        <li>also XML-based</li>
+        <li>used for tracks & routes</li>
+        <li>not just <em>location</em></li>
+        <li>but <em> elevation</em> and <em>time</em></li>
+      </ul>
+    </div>
+    <div>
+      <p class="bold">CSV & TSV<br/>(comma- and tab- separated values)</p>
+      <ul>
+        <li>flat text files</li>
+        <li>not necessarily spatial</li>
+        <li>maybe a<em> lat</em> and <em>lon</em> column: points!</li>
+        <li>maybe a<em> WKB</em> or <em>WKT</em> column: lines! polygons!</li>
+      </ul>
+    </div>
+    <div>
+    <p class="bold">check out the website:</p>
+    <em>maptimedet</em>.<em>github</em>.<em>io</em>
+    </div>
